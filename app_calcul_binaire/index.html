@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TSSR - Conversions & Classement</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- Modal d'identification au lancement -->
+    <div id="login-modal" class="modal-overlay">
+        <div class="modal-card">
+            <h2> Bienvenue en au Challenge Binaire</h2>
+            <p>Entre ton prénom et nom pour enregistrer ton score dans le classement :</p>
+            <form id="user-form" onsubmit="saveUser(event)">
+                <div class="form-group">
+                    <input type="text" id="user-firstname" placeholder="Prénom" required>
+                </div>
+                <div class="form-group">
+                    <input type="text" id="user-lastname" placeholder="Nom" required>
+                </div>
+                <button type="submit" class="action-btn primary-btn full-width">Démarrer le challenge !</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <h1>Conversion de Bases (TSSR)</h1>
+            <div id="user-profile" class="user-badge-header">
+                👤 Stagiaire : <strong id="current-user-display">-</strong>
+                <button onclick="changeUser()" class="btn-sm">Changer</button>
+            </div>
+        </header>
+
+        <!-- Mode Selector -->
+        <nav class="mode-selector">
+            <button class="nav-btn active" id="btn-quiz" onclick="switchMode('quiz')">🎮 Quiz</button>
+            <button class="nav-btn" id="btn-leaderboard" onclick="switchMode('leaderboard')">🏆 Classement</button>
+            <button class="nav-btn" id="btn-workbench" onclick="switchMode('workbench')">🛠️ Workbench 8-Bit</button>
+            <button class="nav-btn" id="btn-cheatsheet" onclick="switchMode('cheatsheet')">📖 Aide-Mémoire</button>
+        </nav>
+
+        <!-- SECTION 1: QUIZ -->
+        <section id="mode-quiz" class="mode-section active">
+            <div class="stats-bar">
+                <div class="stat-card">
+                    <span class="stat-label">Score</span>
+                    <span class="stat-value" id="score-val">0</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Série actuelle</span>
+                    <span class="stat-value" id="streak-val">🔥 0</span>
+                </div>
+            </div>
+
+            <div class="quiz-card">
+                <div class="quiz-header">
+                    <span class="quiz-badge" id="quiz-badge">Binaire → Décimal</span>
+                    <span class="quiz-type" id="quiz-type-desc">Conversion réseau</span>
+                </div>
+
+                <div class="question-container">
+                    <div class="question-label">Convertir la valeur suivante :</div>
+                    <div class="question-value" id="question-val">11000000</div>
+                    <div class="question-target" id="target-label">en Décimal (Base 10)</div>
+                </div>
+
+                <div class="input-group">
+                    <input type="text" id="user-input" placeholder="Saisis ta réponse..." autocomplete="off">
+                    <button class="action-btn primary-btn" onclick="checkAnswer()">Vérifier</button>
+                </div>
+
+                <div id="feedback-message" class="feedback hidden"></div>
+
+                <div class="action-bar">
+                    <button class="action-btn secondary-btn" onclick="toggleHint()">💡 Indice / Explication</button>
+                    <button class="action-btn outline-btn" onclick="nextQuestion()">Question Suivante ➔</button>
+                </div>
+
+                <div id="hint-box" class="hint-box hidden">
+                    <h4>Méthode de calcul :</h4>
+                    <p id="hint-content">Décomposition...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: LEADERBOARD -->
+        <section id="mode-leaderboard" class="mode-section">
+            <div class="sheet-card">
+                <h3>🏆 Classement de la Promotion TSSR</h3>
+                <p class="subtitle">Les meilleurs scores enregistrés localement :</p>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Rang</th>
+                            <th>Stagiaire</th>
+                            <th>Score</th>
+                            <th>Meilleure Série</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard-body">
+                        <!-- Rempli en JS -->
+                    </tbody>
+                </table>
+                <button onclick="clearLeaderboard()" class="action-btn outline-btn danger-btn margin-top">Réinitialiser
+                    le classement</button>
+            </div>
+        </section>
+
+        <!-- SECTION 3: WORKBENCH -->
+        <section id="mode-workbench" class="mode-section">
+            <div class="workbench-card">
+                <h3>Banc d'essai 8-Bit Interactif</h3>
+                <p>Clique sur les bits pour les basculer entre 0 et 1 :</p>
+                <div class="bit-grid" id="bit-grid"></div>
+                <div class="conversion-display">
+                    <div class="conv-box"><span class="conv-label">Décimal</span><span class="conv-val"
+                            id="wb-dec">0</span></div>
+                    <div class="conv-box"><span class="conv-label">Binaire</span><span class="conv-val"
+                            id="wb-bin">00000000</span></div>
+                    <div class="conv-box"><span class="conv-label">Hexadécimal</span><span class="conv-val"
+                            id="wb-hex">0x00</span></div>
+                </div>
+                <div class="math-breakdown">
+                    <h4>Décomposition :</h4>
+                    <div id="wb-math" class="math-expression">0 = 0</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: CHEATSHEET -->
+        <section id="mode-cheatsheet" class="mode-section">
+            <div class="cheatsheet-grid">
+                <div class="sheet-card">
+                    <h3>Correspondance Hexa ➔ Binaire</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Hexa</th>
+                                <th>Décimal</th>
+                                <th>Binaire</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>0</td>
+                                <td>0</td>
+                                <td>0000</td>
+                            </tr>
+                            <tr>
+                                <td>1</td>
+                                <td>1</td>
+                                <td>0001</td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>2</td>
+                                <td>0010</td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>3</td>
+                                <td>0011</td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td>4</td>
+                                <td>0100</td>
+                            </tr>
+                            <tr>
+                                <td>5</td>
+                                <td>5</td>
+                                <td>0101</td>
+                            </tr>
+                            <tr>
+                                <td>6</td>
+                                <td>6</td>
+                                <td>0110</td>
+                            </tr>
+                            <tr>
+                                <td>7</td>
+                                <td>7</td>
+                                <td>0111</td>
+                            </tr>
+                            <tr>
+                                <td>8</td>
+                                <td>8</td>
+                                <td>1000</td>
+                            </tr>
+                            <tr>
+                                <td>9</td>
+                                <td>9</td>
+                                <td>1001</td>
+                            </tr>
+                            <tr>
+                                <td><strong>A</strong></td>
+                                <td>10</td>
+                                <td>1010</td>
+                            </tr>
+                            <tr>
+                                <td><strong>B</strong></td>
+                                <td>11</td>
+                                <td>1011</td>
+                            </tr>
+                            <tr>
+                                <td><strong>C</strong></td>
+                                <td>12</td>
+                                <td>1100</td>
+                            </tr>
+                            <tr>
+                                <td><strong>D</strong></td>
+                                <td>13</td>
+                                <td>1101</td>
+                            </tr>
+                            <tr>
+                                <td><strong>E</strong></td>
+                                <td>14</td>
+                                <td>1110</td>
+                            </tr>
+                            <tr>
+                                <td><strong>F</strong></td>
+                                <td>15</td>
+                                <td>1111</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="sheet-card">
+                    <h3>Poids des Bits (Octet IPv4)</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Bit #</th>
+                                <th>Puissance</th>
+                                <th>Poids</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Bit 7</td>
+                                <td>2⁷</td>
+                                <td><strong>128</strong></td>
+                            </tr>
+                            <tr>
+                                <td>Bit 6</td>
+                                <td>2⁶</td>
+                                <td><strong>64</strong></td>
+                            </tr>
+                            <tr>
+                                <td>Bit 5</td>
+                                <td>2⁵</td>
+                                <td><strong>32</strong></td>
+                            </tr>
+                            <tr>
+                                <td>Bit 4</td>
+                                <td>2⁴</td>
+                                <td><strong>16</strong></td>
+                            </tr>
+                            <tr>
+                                <td>Bit 3</td>
+                                <td>2³</td>
+                                <td><strong>8</strong></td>
+                            </tr>
+                            <tr>
+                                <td>Bit 2</td>
+                                <td>2²</td>
+                                <td><strong>4</strong></td>
+                            </tr>
+                            <tr>
+                                <td>Bit 1</td>
+                                <td>2¹</td>
+                                <td><strong>2</strong></td>
+                            </tr>
+                            <tr>
+                                <td>Bit 0</td>
+                                <td>2⁰</td>
+                                <td><strong>1</strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script src="script.js"></script>
+</body>
+
+</html>
