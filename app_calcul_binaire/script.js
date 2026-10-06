@@ -234,9 +234,9 @@ function nextQuestion() {
     loadQuestion(nextIdx);
 }
 
-function toggleHint() {
+/*function toggleHint() {
     document.getElementById('hint-box').classList.toggle('hidden');
-}
+}*/
 
 function updateStats() {
     document.getElementById('score-val').innerText = score;
