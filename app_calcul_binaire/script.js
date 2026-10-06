@@ -41,8 +41,9 @@ async function supabaseRequest(path, options = {}) {
         console.error('Erreur Supabase:', res.status, await res.text());
         return null;
     }
-    // 204 = succès sans contenu (UPDATE/DELETE)
-    return res.status === 204 ? [] : res.json();
+    // Réponses sans contenu (204 No Content ou 201 avec corps vide via return=minimal)
+    const text = await res.text();
+    return text ? JSON.parse(text) : [];
 }
 
 // Charger tout le classement (trié par score décroissant)
